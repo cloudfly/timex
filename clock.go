@@ -30,7 +30,7 @@ type Clock interface {
 }
 
 // New returns an instance of a real-time clock.
-func New() Clock {
+func NewClock() Clock {
 	return &clock{}
 }
 
