@@ -71,9 +71,9 @@ func (c *clock) WithTimeout(parent context.Context, t time.Duration) (context.Co
 	return context.WithTimeout(parent, t)
 }
 
-// Mock represents a mock clock that only moves forward programmically.
+// MockClock represents a mock clock that only moves forward programmically.
 // It can be preferable to a real-time clock when testing time-based functionality.
-type Mock struct {
+type MockClock struct {
 	// mu protects all other fields in this struct, and the data that they
 	// point to.
 	mu sync.Mutex
@@ -82,15 +82,15 @@ type Mock struct {
 	timers clockTimers // tickers & timers
 }
 
-// NewMock returns an instance of a mock clock.
+// NewMockClock returns an instance of a mock clock.
 // The current time of the mock clock on initialization is the Unix epoch.
-func NewMock() *Mock {
-	return &Mock{now: time.Unix(0, 0)}
+func NewMockClock() *MockClock {
+	return &MockClock{now: time.Unix(0, 0)}
 }
 
 // Add moves the current time of the mock clock forward by the specified duration.
 // This should only be called from a single goroutine at a time.
-func (m *Mock) Add(d time.Duration) {
+func (m *MockClock) Add(d time.Duration) {
 	// Calculate the final current time.
 	m.mu.Lock()
 	t := m.now.Add(d)
@@ -114,7 +114,7 @@ func (m *Mock) Add(d time.Duration) {
 
 // Set sets the current time of the mock clock to a specific one.
 // This should only be called from a single goroutine at a time.
-func (m *Mock) Set(t time.Time) {
+func (m *MockClock) Set(t time.Time) {
 	// Continue to execute timers until there are no more before the new time.
 	for {
 		if !m.runNextTimer(t) {
@@ -132,7 +132,7 @@ func (m *Mock) Set(t time.Time) {
 }
 
 // WaitForAllTimers sets the clock until all timers are expired
-func (m *Mock) WaitForAllTimers() time.Time {
+func (m *MockClock) WaitForAllTimers() time.Time {
 	// Continue to execute timers until there are no more
 	for {
 		m.mu.Lock()
@@ -151,7 +151,7 @@ func (m *Mock) WaitForAllTimers() time.Time {
 // runNextTimer executes the next timer in chronological order and moves the
 // current time to the timer's next tick time. The next time is not executed if
 // its next time is after the max time. Returns true if a timer was executed.
-func (m *Mock) runNextTimer(max time.Time) bool {
+func (m *MockClock) runNextTimer(max time.Time) bool {
 	m.mu.Lock()
 
 	// Sort timers by time.
@@ -181,13 +181,13 @@ func (m *Mock) runNextTimer(max time.Time) bool {
 }
 
 // After waits for the duration to elapse and then sends the current time on the returned channel.
-func (m *Mock) After(d time.Duration) <-chan time.Time {
+func (m *MockClock) After(d time.Duration) <-chan time.Time {
 	return m.Timer(d).C
 }
 
 // AfterFunc waits for the duration to elapse and then executes a function in its own goroutine.
 // A Timer is returned that can be stopped.
-func (m *Mock) AfterFunc(d time.Duration, f func()) *Timer {
+func (m *MockClock) AfterFunc(d time.Duration, f func()) *Timer {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	ch := make(chan time.Time, 1)
@@ -203,36 +203,36 @@ func (m *Mock) AfterFunc(d time.Duration, f func()) *Timer {
 }
 
 // Now returns the current wall time on the mock clock.
-func (m *Mock) Now() time.Time {
+func (m *MockClock) Now() time.Time {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.now
 }
 
 // Since returns time since `t` using the mock clock's wall time.
-func (m *Mock) Since(t time.Time) time.Duration {
+func (m *MockClock) Since(t time.Time) time.Duration {
 	return m.Now().Sub(t)
 }
 
 // Until returns time until `t` using the mock clock's wall time.
-func (m *Mock) Until(t time.Time) time.Duration {
+func (m *MockClock) Until(t time.Time) time.Duration {
 	return t.Sub(m.Now())
 }
 
 // Sleep pauses the goroutine for the given duration on the mock clock.
 // The clock must be moved forward in a separate goroutine.
-func (m *Mock) Sleep(d time.Duration) {
+func (m *MockClock) Sleep(d time.Duration) {
 	<-m.After(d)
 }
 
 // Tick is a convenience function for Ticker().
 // It will return a ticker channel that cannot be stopped.
-func (m *Mock) Tick(d time.Duration) <-chan time.Time {
+func (m *MockClock) Tick(d time.Duration) <-chan time.Time {
 	return m.Ticker(d).C
 }
 
 // Ticker creates a new instance of Ticker.
-func (m *Mock) Ticker(d time.Duration) *Ticker {
+func (m *MockClock) Ticker(d time.Duration) *Ticker {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	ch := make(chan time.Time, 1)
@@ -248,7 +248,7 @@ func (m *Mock) Ticker(d time.Duration) *Ticker {
 }
 
 // Timer creates a new instance of Timer.
-func (m *Mock) Timer(d time.Duration) *Timer {
+func (m *MockClock) Timer(d time.Duration) *Timer {
 	m.mu.Lock()
 	ch := make(chan time.Time, 1)
 	t := &Timer{
@@ -267,7 +267,7 @@ func (m *Mock) Timer(d time.Duration) *Timer {
 
 // removeClockTimer removes a timer from m.timers. m.mu MUST be held
 // when this method is called.
-func (m *Mock) removeClockTimer(t clockTimer) {
+func (m *MockClock) removeClockTimer(t clockTimer) {
 	for i, timer := range m.timers {
 		if timer == t {
 			copy(m.timers[i:], m.timers[i+1:])
@@ -299,7 +299,7 @@ type Timer struct {
 	c       chan time.Time
 	timer   *time.Timer // realtime impl, if set
 	next    time.Time   // next tick time
-	mock    *Mock       // mock clock, if set
+	mock    *MockClock  // mock clock, if set
 	fn      func()      // AfterFunc function, if set
 	stopped bool        // True if stopped, false if running
 }
@@ -363,7 +363,7 @@ type Ticker struct {
 	c       chan time.Time
 	ticker  *time.Ticker  // realtime impl, if set
 	next    time.Time     // next tick time
-	mock    *Mock         // mock clock, if set
+	mock    *MockClock    // mock clock, if set
 	d       time.Duration // time between ticks
 	stopped bool          // True if stopped, false if running
 }
@@ -418,5 +418,5 @@ func gosched() { time.Sleep(1 * time.Millisecond) }
 
 var (
 	// type checking
-	_ Clock = &Mock{}
+	_ Clock = &MockClock{}
 )

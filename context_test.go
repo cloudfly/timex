@@ -9,7 +9,7 @@ import (
 
 // Ensure that WithDeadline is cancelled when deadline exceeded.
 func TestMock_WithDeadline(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	ctx, _ := m.WithDeadline(context.Background(), m.Now().Add(time.Second))
 	m.Add(time.Second)
 	select {
@@ -24,7 +24,7 @@ func TestMock_WithDeadline(t *testing.T) {
 
 // Ensure that WithDeadline does nothing when the deadline is later than the current deadline.
 func TestMock_WithDeadlineLaterThanCurrent(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	ctx, _ := m.WithDeadline(context.Background(), m.Now().Add(time.Second))
 	ctx, _ = m.WithDeadline(ctx, m.Now().Add(10*time.Second))
 	m.Add(time.Second)
@@ -40,7 +40,7 @@ func TestMock_WithDeadlineLaterThanCurrent(t *testing.T) {
 
 // Ensure that WithDeadline cancel closes Done channel with context.Canceled error.
 func TestMock_WithDeadlineCancel(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	ctx, cancel := m.WithDeadline(context.Background(), m.Now().Add(time.Second))
 	cancel()
 	select {
@@ -55,7 +55,7 @@ func TestMock_WithDeadlineCancel(t *testing.T) {
 
 // Ensure that WithDeadline closes child contexts after it was closed.
 func TestMock_WithDeadlineCancelledWithParent(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	parent, cancel := context.WithCancel(context.Background())
 	ctx, _ := m.WithDeadline(parent, m.Now().Add(time.Second))
 	cancel()
@@ -71,7 +71,7 @@ func TestMock_WithDeadlineCancelledWithParent(t *testing.T) {
 
 // Ensure that WithDeadline cancelled immediately when deadline has already passed.
 func TestMock_WithDeadlineImmediate(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	ctx, _ := m.WithDeadline(context.Background(), m.Now().Add(-time.Second))
 	select {
 	case <-ctx.Done():
@@ -85,7 +85,7 @@ func TestMock_WithDeadlineImmediate(t *testing.T) {
 
 // Ensure that WithTimeout is cancelled when deadline exceeded.
 func TestMock_WithTimeout(t *testing.T) {
-	m := NewMock()
+	m := NewMockClock()
 	ctx, _ := m.WithTimeout(context.Background(), time.Second)
 	m.Add(time.Second)
 	select {

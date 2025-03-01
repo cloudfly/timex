@@ -196,7 +196,7 @@ func TestClock_Timer_Reset(t *testing.T) {
 }
 
 func TestClock_NegativeDuration(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 	timer := clock.Timer(-time.Second)
 	select {
 	case <-timer.C:
@@ -207,7 +207,7 @@ func TestClock_NegativeDuration(t *testing.T) {
 
 // Ensure reset can be called immediately after reading channel
 func TestClock_Timer_Reset_Unlock(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 	timer := clock.Timer(1 * time.Second)
 
 	var wg sync.WaitGroup
@@ -232,7 +232,7 @@ func TestClock_Timer_Reset_Unlock(t *testing.T) {
 // Ensure that the mock's After channel sends at the correct time.
 func TestMock_After(t *testing.T) {
 	var ok int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Create a channel to execute after 10 mock seconds.
 	ch := clock.After(10 * time.Second)
@@ -256,7 +256,7 @@ func TestMock_After(t *testing.T) {
 
 // Ensure that the mock's After channel doesn't block on write.
 func TestMock_UnusedAfter(t *testing.T) {
-	mock := NewMock()
+	mock := NewMockClock()
 	mock.After(1 * time.Millisecond)
 
 	done := make(chan bool, 1)
@@ -275,7 +275,7 @@ func TestMock_UnusedAfter(t *testing.T) {
 // Ensure that the mock's AfterFunc executes at the correct time.
 func TestMock_AfterFunc(t *testing.T) {
 	var ok int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Execute function after duration.
 	clock.AfterFunc(10*time.Second, func() {
@@ -298,7 +298,7 @@ func TestMock_AfterFunc(t *testing.T) {
 // Ensure that the mock's AfterFunc doesn't execute if stopped.
 func TestMock_AfterFunc_Stop(t *testing.T) {
 	// Execute function after duration.
-	clock := NewMock()
+	clock := NewMockClock()
 	timer := clock.AfterFunc(10*time.Second, func() {
 		t.Fatal("unexpected function execution")
 	})
@@ -312,7 +312,7 @@ func TestMock_AfterFunc_Stop(t *testing.T) {
 
 // Ensure that the mock's current time can be changed.
 func TestMock_Now(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 	if now := clock.Now(); !now.Equal(time.Unix(0, 0)) {
 		t.Fatalf("expected epoch, got: %v", now)
 	}
@@ -325,7 +325,7 @@ func TestMock_Now(t *testing.T) {
 }
 
 func TestMock_Since(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 
 	beginning := clock.Now()
 	clock.Add(500 * time.Second)
@@ -335,7 +335,7 @@ func TestMock_Since(t *testing.T) {
 }
 
 func TestMock_Until(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 
 	end := clock.Now().Add(500 * time.Second)
 	if dur := clock.Until(end); dur.Seconds() != 500 {
@@ -350,7 +350,7 @@ func TestMock_Until(t *testing.T) {
 // Ensure that the mock can sleep for the correct time.
 func TestMock_Sleep(t *testing.T) {
 	var ok int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Create a channel to execute after 10 mock seconds.
 	go func() {
@@ -375,7 +375,7 @@ func TestMock_Sleep(t *testing.T) {
 // Ensure that the mock's Tick channel sends at the correct time.
 func TestMock_Tick(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Create a channel to increment every 10 seconds.
 	go func() {
@@ -409,7 +409,7 @@ func TestMock_Tick(t *testing.T) {
 // Ensure that the mock's Ticker channel sends at the correct time.
 func TestMock_Ticker(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Create a channel to increment every microsecond.
 	go func() {
@@ -430,7 +430,7 @@ func TestMock_Ticker(t *testing.T) {
 
 // Ensure that the mock's Ticker channel won't block if not read from.
 func TestMock_Ticker_Overflow(t *testing.T) {
-	clock := NewMock()
+	clock := NewMockClock()
 	ticker := clock.Ticker(1 * time.Microsecond)
 	clock.Add(10 * time.Microsecond)
 	ticker.Stop()
@@ -439,7 +439,7 @@ func TestMock_Ticker_Overflow(t *testing.T) {
 // Ensure that the mock's Ticker can be stopped.
 func TestMock_Ticker_Stop(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	// Create a channel to increment every second.
 	ticker := clock.Ticker(1 * time.Second)
@@ -468,7 +468,7 @@ func TestMock_Ticker_Stop(t *testing.T) {
 
 func TestMock_Ticker_Reset(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	ticker := clock.Ticker(5 * time.Second)
 	defer ticker.Stop()
@@ -507,7 +507,7 @@ func TestMock_Ticker_Reset(t *testing.T) {
 
 func TestMock_Ticker_Stop_Reset(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	ticker := clock.Ticker(5 * time.Second)
 	defer ticker.Stop()
@@ -554,7 +554,7 @@ func TestMock_Ticker_Stop_Reset(t *testing.T) {
 // Ensure that multiple tickers can be used together.
 func TestMock_Ticker_Multi(t *testing.T) {
 	var n int32
-	clock := NewMock()
+	clock := NewMockClock()
 
 	go func() {
 		a := clock.Ticker(1 * time.Microsecond)
@@ -581,7 +581,7 @@ func TestMock_Ticker_Multi(t *testing.T) {
 
 func ExampleMock_After() {
 	// Create a new mock clock.
-	clock := NewMock()
+	clock := NewMockClock()
 	var count counter
 
 	ready := make(chan struct{})
@@ -613,7 +613,7 @@ func ExampleMock_After() {
 
 func ExampleMock_AfterFunc() {
 	// Create a new mock clock.
-	clock := NewMock()
+	clock := NewMockClock()
 	var count counter
 	count.incr()
 
@@ -637,7 +637,7 @@ func ExampleMock_AfterFunc() {
 
 func ExampleMock_Sleep() {
 	// Create a new mock clock.
-	clock := NewMock()
+	clock := NewMockClock()
 	var count counter
 
 	// Execute a function after 10 mock seconds.
@@ -661,7 +661,7 @@ func ExampleMock_Sleep() {
 
 func ExampleMock_Ticker() {
 	// Create a new mock clock.
-	clock := NewMock()
+	clock := NewMockClock()
 	var count counter
 
 	ready := make(chan struct{})
@@ -691,7 +691,7 @@ func ExampleMock_Ticker() {
 
 func ExampleMock_Timer() {
 	// Create a new mock clock.
-	clock := NewMock()
+	clock := NewMockClock()
 	var count counter
 
 	ready := make(chan struct{})
@@ -713,7 +713,7 @@ func ExampleMock_Timer() {
 }
 
 func TestMock_ReentrantDeadlock(t *testing.T) {
-	mockedClock := NewMock()
+	mockedClock := NewMockClock()
 	timer20 := mockedClock.Timer(20 * time.Second)
 	go func() {
 		v := <-timer20.C
@@ -734,7 +734,7 @@ func TestMock_AddAfterFuncRace(t *testing.T) {
 
 	var wg sync.WaitGroup
 
-	mockedClock := NewMock()
+	mockedClock := NewMockClock()
 
 	var calls counter
 	defer func() {
@@ -767,7 +767,7 @@ func TestMock_AddAfterFuncRace(t *testing.T) {
 }
 
 func TestMock_AfterRace(t *testing.T) {
-	mock := NewMock()
+	mock := NewMockClock()
 
 	const num = 10
 	var finished atomic.Int32

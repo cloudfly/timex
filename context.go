@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-func (m *Mock) WithTimeout(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+func (m *MockClock) WithTimeout(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	return m.WithDeadline(parent, m.Now().Add(timeout))
 }
 
-func (m *Mock) WithDeadline(parent context.Context, deadline time.Time) (context.Context, context.CancelFunc) {
+func (m *MockClock) WithDeadline(parent context.Context, deadline time.Time) (context.Context, context.CancelFunc) {
 	if cur, ok := parent.Deadline(); ok && cur.Before(deadline) {
 		// The current deadline is already sooner than the new one.
 		return context.WithCancel(parent)
