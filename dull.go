@@ -38,23 +38,27 @@ type DullTikcker struct {
 }
 
 func NewDullTicker(opts ...DullOption) *DullTikcker {
-	dull := &DullTikcker{
-		Clock:         NewClock(),
-		op:            make(chan string),
-		c:             make(chan time.Time, 1),
-		next:          DefaultDullFunc,
-		maxInterval:   DefaultDullMaxInterval,
-		minInterval:   DefaultDullMinInterval,
-		interval:      DefaultDullMinInterval,
-		resetDuration: DefaultDullResetDuration,
-	}
+	var (
+		ctx  context.Context
+		dull = &DullTikcker{
+			Clock:         NewClock(),
+			op:            make(chan string),
+			c:             make(chan time.Time, 1),
+			next:          DefaultDullFunc,
+			maxInterval:   DefaultDullMaxInterval,
+			minInterval:   DefaultDullMinInterval,
+			resetDuration: DefaultDullResetDuration,
+		}
+	)
+
 	for _, opt := range opts {
 		opt(dull)
 	}
 	dull.C = dull.c
+	dull.interval = dull.minInterval
 
-	var ctx context.Context
 	ctx, dull.stop = context.WithCancel(context.Background())
+
 	go dull.activate(ctx)
 
 	return dull
