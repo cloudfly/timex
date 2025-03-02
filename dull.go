@@ -114,7 +114,7 @@ func (dull *DullTikcker) activate(ctx context.Context) {
 
 			if reachReset {
 				// triggered by max wait duration, reset the interval
-				dull.interval = DefaultDullMinInterval
+				dull.interval = dull.minInterval
 			} else {
 				// triggered by interval
 				dull.interval = dull.next(dull.interval)
