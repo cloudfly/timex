@@ -138,14 +138,14 @@ type DullOption func(*DullTikcker)
 // WithDullMaxInterval set the maximum interval, use DefaulDullMaxStep by default.
 func WithDullMaxInterval(interval time.Duration) DullOption {
 	return func(dull *DullTikcker) {
-		dull.maxInterval = time.Millisecond
+		dull.maxInterval = interval
 	}
 }
 
 // WithDullMaxInterval set the minimum interval, use DefaulDullMinStep by default.
 func WithDullMinInterval(interval time.Duration) DullOption {
 	return func(dull *DullTikcker) {
-		dull.minInterval = time.Millisecond
+		dull.minInterval = interval
 	}
 }
 

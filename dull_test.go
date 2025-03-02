@@ -8,7 +8,7 @@ import (
 func TestDullTicker(t *testing.T) {
 	mock := NewMockClock()
 	mock.Set(time.Now())
-	tick := NewDullTicker(WithDullClock(mock), WithDullResetDuration(time.Second*3))
+	tick := NewDullTicker(WithDullClock(mock), WithDullResetDuration(time.Second*3), WithDullMinInterval(time.Second*9))
 	defer tick.Stop()
 
 	// sleep for a while, waiting ticker activate
