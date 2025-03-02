@@ -80,7 +80,7 @@ func (dull *DullTikcker) Stop() {
 
 func (dull *DullTikcker) activate(ctx context.Context) {
 	var ticker *Ticker
-	if dull.minInterval >= 2000 {
+	if dull.minInterval >= time.Second*2 {
 		ticker = dull.Ticker(time.Second)
 	} else {
 		ticker = dull.Ticker(time.Millisecond * 100)
