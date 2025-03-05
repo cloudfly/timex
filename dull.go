@@ -68,6 +68,10 @@ func (dull *DullTikcker) Touch() {
 	dull.op <- "touch"
 }
 
+func (dull *DullTikcker) TouchTime() time.Time {
+	return dull.touchTime
+}
+
 func (dull *DullTikcker) Reset() {
 	dull.op <- "reset"
 }
