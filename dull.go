@@ -15,11 +15,11 @@ const (
 // And if stop Touch() in some period, the ticker would be reset.
 // User can also custom the dull behavior, by default the tick interval will be extended exponentially until it reaches the MaxInterval.
 type DullTikcker struct {
-	Clock
-	c    chan time.Time
-	C    <-chan time.Time
-	op   chan string
-	stop func()
+	clock Clock
+	c     chan time.Time
+	C     <-chan time.Time
+	op    chan string
+	stop  func()
 
 	next func(time.Duration) time.Duration
 
@@ -41,7 +41,7 @@ func NewDullTicker(opts ...DullOption) *DullTikcker {
 	var (
 		ctx  context.Context
 		dull = &DullTikcker{
-			Clock:         NewClock(),
+			clock:         NewClock(),
 			op:            make(chan string),
 			c:             make(chan time.Time, 1),
 			next:          DefaultDullFunc,
@@ -81,9 +81,9 @@ func (dull *DullTikcker) Stop() {
 func (dull *DullTikcker) activate(ctx context.Context) {
 	var ticker *Ticker
 	if dull.minInterval >= time.Second*2 {
-		ticker = dull.Ticker(time.Second)
+		ticker = dull.clock.Ticker(time.Second)
 	} else {
-		ticker = dull.Ticker(time.Millisecond * 100)
+		ticker = dull.clock.Ticker(time.Millisecond * 100)
 	}
 	defer ticker.Stop()
 	for {
@@ -97,7 +97,7 @@ func (dull *DullTikcker) activate(ctx context.Context) {
 				dull.tickTime = time.Unix(0, 0)
 				dull.touchTime = time.Time{}
 			case "touch":
-				dull.touchTime = dull.Now()
+				dull.touchTime = dull.clock.Now()
 			}
 		case now := <-ticker.C:
 			if dull.touchTime.IsZero() {
@@ -163,7 +163,7 @@ func WithDullResetDuration(reset time.Duration) DullOption {
 // WithDullClock set the Clock object, mostly used to set MockClock in test.
 func WithDullClock(clock Clock) DullOption {
 	return func(dull *DullTikcker) {
-		dull.Clock = clock
+		dull.clock = clock
 	}
 }
 
