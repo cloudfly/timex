@@ -5,16 +5,18 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 )
 
-// durationValue returns the duration in milliseconds for the given s
-// and the given step.
+// ParseDuration returns the duration parsed from the given string
 //
 // Duration in s may be combined, i.e. 2h5m, -2h5m or 2h-5m.
 //
+// Besides the time unit in official lib, ParseDuration also support d(day), w(week), y(year), i.e. 3d12h, 2w, 1y
+//
 // The returned duration value can be negative.
-func durationValue(s string, step int64) (int64, error) {
+func ParseDuration(s string) (time.Duration, error) {
 	if len(s) == 0 {
 		return 0, fmt.Errorf("duration cannot be empty")
 	}
@@ -24,7 +26,7 @@ func durationValue(s string, step int64) (int64, error) {
 		d, err := strconv.ParseFloat(s, 64)
 		if err == nil {
 			// Convert the duration to milliseconds.
-			return int64(d * 1000), nil
+			return time.Duration(int64(d*1000)) * time.Millisecond, nil
 		}
 	}
 	isMinus := false
@@ -36,7 +38,7 @@ func durationValue(s string, step int64) (int64, error) {
 		}
 		ds := s[:n]
 		s = s[n:]
-		dLocal, err := parseSingleDuration(ds, step)
+		dLocal, err := parseSingleDuration(ds, 0)
 		if err != nil {
 			return 0, err
 		}
@@ -51,7 +53,7 @@ func durationValue(s string, step int64) (int64, error) {
 	if math.Abs(d) > 1<<63-1 {
 		return 0, fmt.Errorf("too big duration %.0fms", d)
 	}
-	return int64(d), nil
+	return time.Duration(int64(d)) * time.Millisecond, nil
 }
 
 func parseSingleDuration(s string, step int64) (float64, error) {
