@@ -68,10 +68,6 @@ func (dull *DullTikcker) Touch() {
 	dull.op <- "touch"
 }
 
-func (dull *DullTikcker) TouchTime() time.Time {
-	return dull.touchTime
-}
-
 func (dull *DullTikcker) Reset() {
 	dull.op <- "reset"
 }
@@ -116,7 +112,7 @@ func (dull *DullTikcker) activate(ctx context.Context) {
 			}
 
 			select {
-			case dull.c <- now:
+			case dull.c <- dull.touchTime:
 			default:
 			}
 
