@@ -100,6 +100,12 @@ func (dull *DullTikcker) activate(ctx context.Context) {
 				dull.touchTime = dull.clock.Now()
 			}
 		case now := <-ticker.C:
+			/*
+				fmt.Println("--------")
+				fmt.Println("    now:", now)
+				fmt.Println("    touch:", dull.touchTime, dull.resetDuration)
+				fmt.Println("    tick:", dull.tickTime, dull.interval)
+			*/
 			if dull.touchTime.IsZero() {
 				break
 			}
@@ -177,5 +183,6 @@ func WithDullFunc(f func(time.Duration) time.Duration) DullOption {
 
 // DefaultDullFunc double the given duration
 func DefaultDullFunc(d time.Duration) time.Duration {
-	return d * 2
+	// d * 1.5 ^ n
+	return d * 3 / 2
 }

@@ -58,3 +58,25 @@ func TestDullTicker(t *testing.T) {
 		}
 	})
 }
+
+func TestDullTickerReal(t *testing.T) {
+	t.Log("This test will run for a long time, please waiting for it")
+
+	dt := NewDullTicker()
+
+	go func() {
+		for i := 0; i < 200; i++ {
+			dt.Touch()
+			time.Sleep(time.Second)
+		}
+		time.Sleep(time.Minute * 5)
+		for i := 0; i < 200; i++ {
+			dt.Touch()
+			time.Sleep(time.Second)
+		}
+	}()
+
+	for now := range dt.C {
+		t.Log("tick:", now)
+	}
+}

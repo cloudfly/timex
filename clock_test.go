@@ -579,7 +579,7 @@ func TestMock_Ticker_Multi(t *testing.T) {
 	}
 }
 
-func ExampleMock_After() {
+func ExampleMockClock_After() {
 	// Create a new mock clock.
 	clock := NewMockClock()
 	var count counter
@@ -611,7 +611,7 @@ func ExampleMock_After() {
 	// 1970-01-01 00:00:10 +0000 UTC: 1
 }
 
-func ExampleMock_AfterFunc() {
+func ExampleMockClock_AfterFunc() {
 	// Create a new mock clock.
 	clock := NewMockClock()
 	var count counter
@@ -635,7 +635,7 @@ func ExampleMock_AfterFunc() {
 	// 1970-01-01 00:00:10 +0000 UTC: 2
 }
 
-func ExampleMock_Sleep() {
+func ExampleMockClock_Sleep() {
 	// Create a new mock clock.
 	clock := NewMockClock()
 	var count counter
@@ -659,7 +659,7 @@ func ExampleMock_Sleep() {
 	// 1970-01-01 00:00:10 +0000 UTC: 1
 }
 
-func ExampleMock_Ticker() {
+func ExampleMockClock_Ticker() {
 	// Create a new mock clock.
 	clock := NewMockClock()
 	var count counter
@@ -689,7 +689,7 @@ func ExampleMock_Ticker() {
 	// Count is 15 after 15 seconds
 }
 
-func ExampleMock_Timer() {
+func ExampleMockClock_Timer() {
 	// Create a new mock clock.
 	clock := NewMockClock()
 	var count counter
